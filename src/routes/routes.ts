@@ -98,4 +98,26 @@ export function routes(app: FastifyInstance) {
         .send(`O usuário ${user.NomeCompleto} foi deletado com sucesso!`);
     }
   );
+
+  app.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { email, senha } = request.body as {
+      email: string;
+      senha: string;
+    };
+
+    const user = await prisma.user.findFirst({
+      where: {
+        Email: email,
+        Senha: senha,
+      },
+    });
+
+    if (!user) throw new Error("Usuário não encontrado!");
+
+    const token = app.jwt.sign({
+      ...user,
+    });
+
+    return reply.status(201).send(token);
+  });
 }
